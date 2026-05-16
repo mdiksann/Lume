@@ -1,6 +1,6 @@
 name: lume
 description: "Lume — AI-Powered Book Tracking Application"
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
@@ -14,6 +14,7 @@ dependencies:
   # State Management
   flutter_bloc: ^9.1.1
   bloc: ^9.1.1
+  bloc_concurrency: ^0.3.0
   equatable: ^2.0.8
 
   # Local Storage
@@ -49,5 +50,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/Logo.png
+    - assets/Logo2.png
     - .env
