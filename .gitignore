@@ -1,5 +1,7 @@
 # Environment variables
 .env
+node_modules/
+
 
 # Miscellaneous
 *.class
