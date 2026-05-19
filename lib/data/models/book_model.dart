@@ -101,8 +101,15 @@ class BookModel extends HiveObject {
         imageLinks['smallThumbnail'] as String?;
 
     // Google Books returns HTTP URLs; upgrade to HTTPS
-    if (coverUrl != null && coverUrl.startsWith('http://')) {
-      coverUrl = coverUrl.replaceFirst('http://', 'https://');
+    if (coverUrl != null) {
+      if (coverUrl.startsWith('http://')) {
+        coverUrl = coverUrl.replaceFirst('http://', 'https://');
+      }
+      // Remove edge=curl which adds an ugly curled corner to the book cover
+      coverUrl = coverUrl.replaceAll('&edge=curl', '');
+      
+      // Use a CORS proxy to bypass Flutter Web CanvasKit EncodingError issues
+      coverUrl = 'https://images.weserv.nl/?url=${Uri.encodeComponent(coverUrl)}';
     }
 
     return BookModel(
