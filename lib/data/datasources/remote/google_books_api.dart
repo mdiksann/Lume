@@ -6,6 +6,7 @@ import 'package:lume/core/constants/api_constants.dart';
 /// Remote data source for querying the Google Books API.
 ///
 /// Handles HTTP requests and JSON parsing for book search results.
+/// Uses the API key from `.env` if available for higher rate limits.
 class GoogleBooksApi {
   final http.Client _client;
 
@@ -21,17 +22,26 @@ class GoogleBooksApi {
   }) async {
     if (query.trim().isEmpty) return [];
 
-    final uri = Uri.parse(
-      '${ApiConstants.googleBooksBaseUrl}'
-      '?q=${Uri.encodeComponent(query)}'
-      '&maxResults=$maxResults'
-      '&printType=books'
-      '&orderBy=relevance',
-    );
+    // Build URL with optional API key
+    final queryParams = {
+      'q': query,
+      'maxResults': maxResults.toString(),
+      'printType': 'books',
+      'orderBy': 'relevance',
+    };
+
+    // Include API key if configured (higher rate limits)
+    final apiKey = ApiConstants.googleBooksApiKey;
+    if (apiKey.isNotEmpty) {
+      queryParams['key'] = apiKey;
+    }
+
+    final uri = Uri.parse(ApiConstants.googleBooksBaseUrl)
+        .replace(queryParameters: queryParams);
 
     try {
       final response = await _client.get(uri).timeout(
-            const Duration(seconds: 10),
+            const Duration(seconds: 15),
           );
 
       if (response.statusCode == 200) {
@@ -45,7 +55,15 @@ class GoogleBooksApi {
                 BookModel.fromGoogleBooksJson(item as Map<String, dynamic>))
             .toList();
       } else if (response.statusCode == 429) {
-        throw Exception('Rate limit exceeded. Please try again later.');
+        throw Exception(
+          'Rate limit exceeded. Please add a Google Books API key '
+          'to your .env file, or wait a moment and try again.',
+        );
+      } else if (response.statusCode == 403) {
+        throw Exception(
+          'API key invalid or Books API not enabled. '
+          'Check your Google Cloud Console settings.',
+        );
       } else {
         throw Exception(
             'Failed to search books: HTTP ${response.statusCode}');
@@ -57,13 +75,19 @@ class GoogleBooksApi {
 
   /// Fetches detailed information for a single book by its [volumeId].
   Future<BookModel?> getBookDetails(String volumeId) async {
+    final queryParams = <String, String>{};
+    final apiKey = ApiConstants.googleBooksApiKey;
+    if (apiKey.isNotEmpty) {
+      queryParams['key'] = apiKey;
+    }
+
     final uri = Uri.parse(
       '${ApiConstants.googleBooksBaseUrl}/$volumeId',
-    );
+    ).replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
 
     try {
       final response = await _client.get(uri).timeout(
-            const Duration(seconds: 10),
+            const Duration(seconds: 15),
           );
 
       if (response.statusCode == 200) {
