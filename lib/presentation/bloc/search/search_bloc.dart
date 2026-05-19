@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart' show restartable;
 import 'package:lume/domain/repositories/book_repository.dart';
 import 'package:lume/presentation/bloc/search/search_event.dart';
 import 'package:lume/presentation/bloc/search/search_state.dart';
 
 /// BLoC for searching books via the Google Books API.
 ///
-/// Implements debounced search (300ms) using a restartable
+/// Implements debounced search (500ms) using a restartable
 /// event transformer to avoid excessive API calls while typing.
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
   final BookRepository bookRepository;
@@ -14,7 +15,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
   SearchBloc({required this.bookRepository}) : super(SearchInitial()) {
     on<SearchBooks>(
       _onSearchBooks,
-      transformer: _debounce(const Duration(milliseconds: 300)),
+      transformer: restartable(),
     );
     on<ClearSearch>(_onClearSearch);
   }
@@ -28,6 +29,9 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       emit(SearchInitial());
       return;
     }
+
+    // Debounce: wait 500ms before actually searching
+    await Future.delayed(const Duration(milliseconds: 500));
 
     emit(SearchLoading());
     try {
@@ -43,25 +47,5 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     Emitter<SearchState> emit,
   ) {
     emit(SearchInitial());
-  }
-
-  /// Creates a debounce transformer that restarts the timer
-  /// on each new event, ensuring only the last event in a
-  /// rapid sequence is processed.
-  EventTransformer<T> _debounce<T>(Duration duration) {
-    return (events, mapper) {
-      return events
-          .transform(
-            StreamTransformer<T, T>.fromHandlers(
-              handleData: (data, sink) {
-                sink.add(data);
-              },
-            ),
-          )
-          .asyncExpand((event) => Future.delayed(duration)
-              .then((_) => event)
-              .asStream()
-              .asyncExpand(mapper));
-    };
   }
 }
