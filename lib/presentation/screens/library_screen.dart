@@ -6,9 +6,15 @@ import 'package:lume/domain/entities/book.dart';
 import 'package:lume/presentation/bloc/library/library_bloc.dart';
 import 'package:lume/presentation/bloc/library/library_event.dart';
 import 'package:lume/presentation/bloc/library/library_state.dart';
+import 'package:lume/presentation/bloc/recommendation/recommendation_bloc.dart';
+import 'package:lume/presentation/bloc/recommendation/recommendation_event.dart';
+import 'package:lume/presentation/bloc/recommendation/recommendation_state.dart';
+import 'package:lume/presentation/widgets/book_card.dart';
 import 'package:lume/presentation/widgets/book_list_view.dart';
+import 'package:lume/presentation/widgets/empty_state_widget.dart';
 import 'package:lume/presentation/widgets/shimmer_loading.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uuid/uuid.dart';
 
 /// Main Library Dashboard with three tabs:
 /// Reading Now, Finished, and Wishlist.
@@ -55,13 +61,6 @@ class _LibraryScreenState extends State<LibraryScreen>
             ? _buildLibraryTab(context)
             : const SizedBox.shrink(),
       ),
-      floatingActionButton: _currentNavIndex == 0
-          ? FloatingActionButton(
-              heroTag: 'search_fab',
-              onPressed: () => Navigator.of(context).pushNamed('/search'),
-              child: const Icon(Icons.search_rounded, size: 26),
-            )
-          : null,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
@@ -75,7 +74,7 @@ class _LibraryScreenState extends State<LibraryScreen>
           currentIndex: _currentNavIndex,
           onTap: (index) {
             if (index == 1) {
-              Navigator.of(context).pushNamed('/recommendations');
+              Navigator.of(context).pushNamed('/search');
             } else if (index == 2) {
               Navigator.of(context).pushNamed('/settings');
             } else {
@@ -88,8 +87,8 @@ class _LibraryScreenState extends State<LibraryScreen>
               label: 'Library',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.auto_awesome_rounded),
-              label: 'For You',
+              icon: Icon(Icons.search_rounded),
+              label: 'Search',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings_rounded),
@@ -207,20 +206,13 @@ class _LibraryScreenState extends State<LibraryScreen>
                     onBookLongPress: (book) => _showStatusSheet(book),
                   ),
                 ),
-                // Finished
+                // Finished — with AI Recommendations
                 RefreshIndicator(
                   onRefresh: () async {
                     context.read<LibraryBloc>().add(const LoadBooks());
                   },
                   color: AppColors.lightAccent,
-                  child: BookListView(
-                    books: state.finished,
-                    emptyIcon: Icons.done_all_rounded,
-                    emptyTitle: AppStrings.finishedEmpty,
-                    emptySubtitle: AppStrings.finishedEmptySubtitle,
-                    onBookTap: (book) => _navigateToDetail(book),
-                    onBookLongPress: (book) => _showStatusSheet(book),
-                  ),
+                  child: _buildFinishedTab(context, state.finished),
                 ),
                 // Wishlist
                 RefreshIndicator(
@@ -247,6 +239,230 @@ class _LibraryScreenState extends State<LibraryScreen>
           return const SizedBox.shrink();
         },
       ),
+    );
+  }
+
+  /// Builds the Finished tab with an AI recommendation banner
+  /// above the book list when books are present.
+  Widget _buildFinishedTab(BuildContext context, List<Book> books) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    if (books.isEmpty) {
+      return const EmptyStateWidget(
+        icon: Icons.done_all_rounded,
+        title: AppStrings.finishedEmpty,
+        subtitle: AppStrings.finishedEmptySubtitle,
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.only(top: 8, bottom: 100),
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
+      children: [
+        // ── AI Recommendation Banner ──
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+          child: BlocBuilder<RecommendationBloc, RecommendationState>(
+            builder: (context, state) {
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [AppColors.darkAccentMuted, AppColors.darkSurface]
+                        : [
+                            AppColors.lightAccentMuted.withValues(alpha: 0.5),
+                            AppColors.lightSurface
+                          ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark
+                        ? AppColors.darkDivider
+                        : AppColors.lightDivider,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Banner header
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.auto_awesome_rounded,
+                            size: 20,
+                            color: isDark
+                                ? AppColors.darkAccent
+                                : AppColors.lightAccent,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'AI Recommendations',
+                              style: theme.textTheme.titleSmall,
+                            ),
+                          ),
+                          if (state is RecommendationLoading)
+                            SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: isDark
+                                    ? AppColors.darkAccent
+                                    : AppColors.lightAccent,
+                              ),
+                            )
+                          else
+                            TextButton(
+                              onPressed: () => context
+                                  .read<RecommendationBloc>()
+                                  .add(FetchRecommendations()),
+                              child: Text(
+                                state is RecommendationLoaded
+                                    ? 'Refresh'
+                                    : 'Generate',
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                      child: Text(
+                        'Based on your ${books.length} finished book${books.length == 1 ? '' : 's'}',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ),
+                    // Recommendation content
+                    if (state is RecommendationLoaded) ...[
+                      Divider(
+                        height: 1,
+                        color: isDark
+                            ? AppColors.darkDivider
+                            : AppColors.lightDivider,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          state.result.profileSummary,
+                          style: theme.textTheme.bodyMedium
+                              ?.copyWith(height: 1.5, fontStyle: FontStyle.italic),
+                        ),
+                      ),
+                      ...state.result.books.map((recBook) => Container(
+                            margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  recBook.title,
+                                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  recBook.author,
+                                  style: theme.textTheme.bodyMedium?.copyWith(color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                                ),
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? AppColors.darkAccentMuted : AppColors.lightAccentMuted,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    recBook.genre,
+                                    style: theme.textTheme.labelSmall,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  recBook.reason,
+                                  style: theme.textTheme.bodySmall?.copyWith(height: 1.5),
+                                ),
+                                const SizedBox(height: 16),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: FilledButton.tonalIcon(
+                                    onPressed: () {
+                                      final newBook = Book(
+                                        id: const Uuid().v4(),
+                                        title: recBook.title,
+                                        authors: [recBook.author],
+                                        genres: [recBook.genre],
+                                        status: BookStatus.readingNow,
+                                        dateAdded: DateTime.now(),
+                                        description: 'AI Recommendation: ${recBook.reason}',
+                                      );
+                                      context.read<LibraryBloc>().add(AddBookToLibrary(newBook));
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Added "${recBook.title}" to Reading Now'),
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.add_rounded, size: 18),
+                                    label: const Text('Reading Now'),
+                                    style: FilledButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )),
+                      const SizedBox(height: 8),
+                    ],
+                    if (state is RecommendationError) ...[
+                      Divider(
+                        height: 1,
+                        color: isDark
+                            ? AppColors.darkDivider
+                            : AppColors.lightDivider,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          state.message,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isDark
+                                ? AppColors.darkError
+                                : AppColors.lightError,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+
+        // ── Finished Books List ──
+        ...books.map((book) => BookCard(
+              book: book,
+              onTap: () => _navigateToDetail(book),
+              onLongPress: () => _showStatusSheet(book),
+            )),
+      ],
     );
   }
 
