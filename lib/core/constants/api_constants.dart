@@ -17,7 +17,7 @@ class ApiConstants {
 
   /// Google Gemini API base URL.
   static const String geminiBaseUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash';
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview';
 
   /// Gemini API key — loaded from `.env` file.
   static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
