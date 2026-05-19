@@ -127,7 +127,7 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                         // Logo image
                         Image.asset(
-                          'assets/Logo.png',
+                          'assets/Logo2.png',
                           width: 140,
                           height: 140,
                           color: isDark ? AppColors.darkTextPrimary : null,
