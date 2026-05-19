@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:lume/domain/entities/recommendation.dart';
 
 /// States for the [RecommendationBloc].
 abstract class RecommendationState extends Equatable {
@@ -16,12 +17,12 @@ class RecommendationLoading extends RecommendationState {}
 
 /// Recommendations have been successfully generated.
 class RecommendationLoaded extends RecommendationState {
-  final String recommendations;
+  final RecommendationResult result;
 
-  const RecommendationLoaded(this.recommendations);
+  const RecommendationLoaded(this.result);
 
   @override
-  List<Object?> get props => [recommendations];
+  List<Object?> get props => [result];
 }
 
 /// An error occurred while generating recommendations.
