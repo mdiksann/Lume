@@ -1,5 +1,6 @@
 import 'package:lume/data/datasources/remote/ai_api_client.dart';
 import 'package:lume/domain/entities/book.dart';
+import 'package:lume/domain/entities/recommendation.dart';
 import 'package:lume/domain/repositories/ai_repository.dart';
 
 /// Concrete implementation of [AiRepository].
@@ -12,7 +13,7 @@ class AiRepositoryImpl implements AiRepository {
   AiRepositoryImpl({required this.apiClient});
 
   @override
-  Future<String> getRecommendations(List<Book> finishedBooks) {
+  Future<RecommendationResult> getRecommendations(List<Book> finishedBooks) {
     return apiClient.getRecommendations(finishedBooks);
   }
 }
