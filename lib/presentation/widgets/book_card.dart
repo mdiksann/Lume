@@ -113,10 +113,13 @@ class BookCard extends StatelessWidget {
             ? CachedNetworkImage(
                 imageUrl: book.coverUrl!,
                 fit: BoxFit.cover,
-                placeholder: (_, __) => _buildCoverPlaceholder(context),
-                errorWidget: (_, __, ___) => _buildCoverPlaceholder(context),
-              )
-            : _buildCoverPlaceholder(context),
+              placeholder: (_, __) => _buildCoverPlaceholder(context),
+              errorWidget: (_, url, error) {
+                debugPrint('Image Load Error for $url: $error');
+                return _buildCoverPlaceholder(context);
+              },
+            )
+          : _buildCoverPlaceholder(context),
       ),
     );
   }
