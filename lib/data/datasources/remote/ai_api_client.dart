@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:lume/core/constants/api_constants.dart';
 import 'package:lume/domain/entities/book.dart';
+import 'package:lume/domain/entities/recommendation.dart';
 
 /// Remote data source for communicating with an LLM API
 /// (Google Gemini or OpenAI) to generate reading recommendations.
@@ -16,12 +17,13 @@ class AiApiClient {
   /// Generates reading recommendations based on the user's [finishedBooks].
   ///
   /// Sends book metadata (titles, authors, genres) as a structured prompt
-  /// to the configured LLM endpoint and returns the response text.
-  Future<String> getRecommendations(List<Book> finishedBooks) async {
+  /// to the configured LLM endpoint and returns a [RecommendationResult].
+  Future<RecommendationResult> getRecommendations(List<Book> finishedBooks) async {
     if (finishedBooks.isEmpty) {
-      return 'Start reading and finishing books to get personalized '
-          'AI recommendations! Your reading history helps us understand '
-          'your tastes.';
+      return const RecommendationResult(
+        profileSummary: 'Start reading and finishing books to get personalized AI recommendations! Your reading history helps us understand your tastes.',
+        books: [],
+      );
     }
 
     final prompt = _buildPrompt(finishedBooks);
@@ -48,23 +50,33 @@ You are a literary expert and book recommendation assistant.
 Analyze the following list of books that a reader has finished, 
 then provide:
 
-1. A brief "Reading Profile" summary (2-3 sentences) describing 
-   their reading tastes and patterns.
+1. A brief "Reading Profile" summary (2-3 sentences) describing their reading tastes and patterns.
 2. Exactly 5 personalized book recommendations with:
-   - Title and Author
-   - Genre
-   - A brief explanation of WHY this book fits their taste
+   - title
+   - author
+   - genre
+   - A brief explanation of WHY this book fits their taste (reason)
 
 Books the reader has finished:
 $bookList
 
-Please format your response in a clean, readable way with 
-clear sections. Be thoughtful and specific in your recommendations.
+IMPORTANT: You must respond ONLY with a valid JSON object matching this schema, without any markdown formatting or code blocks:
+{
+  "profileSummary": "A brief summary...",
+  "books": [
+    {
+      "title": "Book Title",
+      "author": "Author Name",
+      "genre": "Genre",
+      "reason": "Why it fits their taste..."
+    }
+  ]
+}
 ''';
   }
 
   /// Calls the Google Gemini API with the given [prompt].
-  Future<String> _callGeminiApi(String prompt) async {
+  Future<RecommendationResult> _callGeminiApi(String prompt) async {
     final apiKey = ApiConstants.geminiApiKey;
     if (apiKey.isEmpty) {
       throw Exception(
@@ -89,6 +101,7 @@ clear sections. Be thoughtful and specific in your recommendations.
       'generationConfig': {
         'temperature': 0.7,
         'maxOutputTokens': 1024,
+        'responseMimeType': 'application/json',
       },
     });
 
@@ -109,10 +122,18 @@ clear sections. Be thoughtful and specific in your recommendations.
             candidates[0]['content'] as Map<String, dynamic>?;
         final parts = content?['parts'] as List<dynamic>?;
         if (parts != null && parts.isNotEmpty) {
-          return parts[0]['text'] as String? ?? 'No recommendations generated.';
+          final textResponse = parts[0]['text'] as String?;
+          if (textResponse != null) {
+            try {
+              final jsonResponse = jsonDecode(textResponse);
+              return RecommendationResult.fromJson(jsonResponse);
+            } catch (e) {
+              throw Exception('Failed to parse AI response as JSON: $e');
+            }
+          }
         }
       }
-      return 'No recommendations generated. Please try again.';
+      throw Exception('No recommendations generated. Please try again.');
     } else if (response.statusCode == 429) {
       throw Exception(
           'AI rate limit exceeded. Please wait a moment and try again.');
