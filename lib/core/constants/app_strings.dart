@@ -6,10 +6,12 @@ class AppStrings {
   static const String appName = 'Lume';
   static const String appTagline = 'Illuminate your reading journey';
 
-  // Tabs
-  static const String readingNow = 'Reading Now';
+  // Tabs & Sections
+  static const String readingNow = 'Reading';
+  static const String readingNowSection = 'Reading Now';
+  static const String toBeReadSection = 'To Be Read';
   static const String finished = 'Finished';
-  static const String wishlist = 'Wishlist';
+  static const String wishlist = 'Wishlist'; // Keeping for compatibility
 
   // Search
   static const String searchHint = 'Search books, authors, genres...';
