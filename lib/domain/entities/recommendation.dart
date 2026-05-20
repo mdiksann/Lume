@@ -6,13 +6,31 @@ class RecommendedBook extends Equatable {
   final String author;
   final String genre;
   final String reason;
+  final String? coverUrl;
 
   const RecommendedBook({
     required this.title,
     required this.author,
     required this.genre,
     required this.reason,
+    this.coverUrl,
   });
+
+  RecommendedBook copyWith({
+    String? title,
+    String? author,
+    String? genre,
+    String? reason,
+    String? coverUrl,
+  }) {
+    return RecommendedBook(
+      title: title ?? this.title,
+      author: author ?? this.author,
+      genre: genre ?? this.genre,
+      reason: reason ?? this.reason,
+      coverUrl: coverUrl ?? this.coverUrl,
+    );
+  }
 
   factory RecommendedBook.fromJson(Map<String, dynamic> json) {
     return RecommendedBook(
@@ -20,11 +38,12 @@ class RecommendedBook extends Equatable {
       author: json['author'] as String? ?? 'Unknown Author',
       genre: json['genre'] as String? ?? 'Unknown Genre',
       reason: json['reason'] as String? ?? '',
+      coverUrl: json['coverUrl'] as String?,
     );
   }
 
   @override
-  List<Object?> get props => [title, author, genre, reason];
+  List<Object?> get props => [title, author, genre, reason, coverUrl];
 }
 
 /// The complete structured result of an AI recommendation request.
@@ -44,6 +63,16 @@ class RecommendationResult extends Equatable {
       books: booksJson
           .map((e) => RecommendedBook.fromJson(e as Map<String, dynamic>))
           .toList(),
+    );
+  }
+
+  RecommendationResult copyWith({
+    String? profileSummary,
+    List<RecommendedBook>? books,
+  }) {
+    return RecommendationResult(
+      profileSummary: profileSummary ?? this.profileSummary,
+      books: books ?? this.books,
     );
   }
 
