@@ -5,6 +5,7 @@ enum BookStatus {
   readingNow,
   finished,
   wishlist,
+  toBeRead,
 }
 
 /// Pure domain entity representing a Book.
