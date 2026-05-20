@@ -12,28 +12,28 @@ class AppColors {
   // Light Mode
   // ──────────────────────────────────────────────
 
-  /// Warm ivory background
+  /// Warm ivory background (Parchment)
   static const Color lightBackground = Color(0xFFFAF8F5);
 
-  /// Slightly warmer surface for cards
+  /// Slightly warmer surface for cards (Linen White)
   static const Color lightSurface = Color(0xFFFFFFFF);
 
-  /// Deep navy — primary brand color
-  static const Color lightPrimary = Color(0xFF1B2838);
+  /// Deep navy / Midnight Ink — primary brand color
+  static const Color lightPrimary = Color(0xFF111622);
 
   /// Warm amber accent — for actions and highlights
-  static const Color lightAccent = Color(0xFFD4A853);
+  static const Color lightAccent = Color(0xFFD99B4E);
 
   /// Muted amber for secondary highlights
   static const Color lightAccentMuted = Color(0xFFE8D5A8);
 
   /// Primary text — deep charcoal
-  static const Color lightTextPrimary = Color(0xFF1B2838);
+  static const Color lightTextPrimary = Color(0xFF111622);
 
-  /// Secondary text — warm grey
-  static const Color lightTextSecondary = Color(0xFF7A7670);
+  /// Secondary text — Charcoal Gray
+  static const Color lightTextSecondary = Color(0xFF4A5260);
 
-  /// Tertiary text — light warm grey
+  /// Tertiary text
   static const Color lightTextTertiary = Color(0xFFB0AAA2);
 
   /// Divider color
@@ -56,7 +56,7 @@ class AppColors {
   static const Color darkPrimary = Color(0xFFFAF8F5);
 
   /// Warm amber accent — consistent across modes
-  static const Color darkAccent = Color(0xFFD4A853);
+  static const Color darkAccent = Color(0xFFD99B4E);
 
   /// Muted amber for dark mode
   static const Color darkAccentMuted = Color(0xFF5C4A28);
@@ -83,6 +83,6 @@ class AppColors {
   /// Star rating gold
   static const Color starGold = Color(0xFFFFB800);
 
-  /// Success green
-  static const Color success = Color(0xFF4CAF50);
+  /// Success green (Sage Leaf)
+  static const Color success = Color(0xFF556B2F);
 }
