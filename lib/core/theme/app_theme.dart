@@ -7,7 +7,7 @@ import 'package:lume/core/constants/app_colors.dart';
 /// Typography hierarchy:
 /// - **Playfair Display** (serif): Display and Headline styles — for
 ///   headings, titles, and branding elements
-/// - **Inter** (sans-serif): Body, Label, and Title styles — for
+/// - **Plus Jakarta Sans** (sans-serif): Body, Label, and Title styles — for
 ///   readable body copy and UI elements
 ///
 /// Design language: Minimalist with high whitespace, subtle shadows,
@@ -53,10 +53,10 @@ class AppTheme {
         color: AppColors.lightSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           side: const BorderSide(
-            color: AppColors.lightDivider,
-            width: 1,
+            color: Color(0x144A5260), // Very soft contrast color (Charcoal with 0.08 opacity)
+            width: 0.8,
           ),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
@@ -182,10 +182,10 @@ class AppTheme {
         color: AppColors.darkSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           side: const BorderSide(
-            color: AppColors.darkDivider,
-            width: 1,
+            color: Color(0x144A5260),
+            width: 0.8,
           ),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
@@ -325,56 +325,56 @@ class AppTheme {
         height: 1.4,
       ),
 
-      // ── Inter — Sans-serif body & UI ──
-      titleLarge: GoogleFonts.inter(
+      // ── Plus Jakarta Sans — Sans-serif body & UI ──
+      titleLarge: GoogleFonts.plusJakartaSans(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: primary,
         height: 1.4,
       ),
-      titleMedium: GoogleFonts.inter(
+      titleMedium: GoogleFonts.plusJakartaSans(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: primary,
         height: 1.4,
       ),
-      titleSmall: GoogleFonts.inter(
+      titleSmall: GoogleFonts.plusJakartaSans(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: primary,
         height: 1.4,
       ),
-      bodyLarge: GoogleFonts.inter(
+      bodyLarge: GoogleFonts.plusJakartaSans(
         fontSize: 16,
         fontWeight: FontWeight.w400,
         color: primary,
         height: 1.6,
       ),
-      bodyMedium: GoogleFonts.inter(
+      bodyMedium: GoogleFonts.plusJakartaSans(
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: secondary,
         height: 1.6,
       ),
-      bodySmall: GoogleFonts.inter(
+      bodySmall: GoogleFonts.plusJakartaSans(
         fontSize: 12,
         fontWeight: FontWeight.w400,
         color: secondary,
         height: 1.5,
       ),
-      labelLarge: GoogleFonts.inter(
+      labelLarge: GoogleFonts.plusJakartaSans(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: primary,
         letterSpacing: 0.3,
       ),
-      labelMedium: GoogleFonts.inter(
+      labelMedium: GoogleFonts.plusJakartaSans(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: secondary,
         letterSpacing: 0.3,
       ),
-      labelSmall: GoogleFonts.inter(
+      labelSmall: GoogleFonts.plusJakartaSans(
         fontSize: 11,
         fontWeight: FontWeight.w500,
         color: secondary,
