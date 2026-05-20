@@ -30,11 +30,14 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
           await bookRepository.getBooksByStatus(BookStatus.finished);
       final wishlist =
           await bookRepository.getBooksByStatus(BookStatus.wishlist);
+      final toBeRead =
+          await bookRepository.getBooksByStatus(BookStatus.toBeRead);
 
       emit(LibraryLoaded(
         readingNow: readingNow,
         finished: finished,
         wishlist: wishlist,
+        toBeRead: toBeRead,
       ));
     } catch (e) {
       emit(LibraryError('Failed to load library: ${e.toString()}'));
