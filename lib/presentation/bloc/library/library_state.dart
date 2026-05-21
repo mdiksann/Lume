@@ -23,18 +23,20 @@ class LibraryLoaded extends LibraryState {
   final List<Book> readingNow;
   final List<Book> finished;
   final List<Book> wishlist;
+  final List<Book> toBeRead;
 
   const LibraryLoaded({
     required this.readingNow,
     required this.finished,
     required this.wishlist,
+    required this.toBeRead,
   });
 
   /// Total number of books across all categories.
-  int get totalBooks => readingNow.length + finished.length + wishlist.length;
+  int get totalBooks => readingNow.length + finished.length + wishlist.length + toBeRead.length;
 
   @override
-  List<Object?> get props => [readingNow, finished, wishlist];
+  List<Object?> get props => [readingNow, finished, wishlist, toBeRead];
 }
 
 /// An error occurred while loading or modifying the library.
