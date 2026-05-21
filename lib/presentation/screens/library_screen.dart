@@ -113,15 +113,35 @@ class _LibraryScreenState extends State<LibraryScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'My Library',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: isDark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary,
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'My Library',
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                          color: isDark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary,
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(Icons.notifications_none_rounded, color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                      const SizedBox(width: 16),
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.lightAccent, width: 2),
+                          image: const DecorationImage(
+                            image: NetworkImage('https://i.pravatar.cc/150?img=68'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   BlocBuilder<LibraryBloc, LibraryState>(
@@ -135,6 +155,91 @@ class _LibraryScreenState extends State<LibraryScreen>
                       return const SizedBox.shrink();
                     },
                   ),
+                  const SizedBox(height: 24),
+                  // Reading Summary Card
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF111622), // Midnight Ink
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF111622).withValues(alpha: 0.15),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Current Reading',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white70,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const Icon(Icons.more_horiz, color: Colors.white70),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          '12h 45m',
+                          style: GoogleFonts.playfairDisplay(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(100),
+                                child: const LinearProgressIndicator(
+                                  value: 0.65,
+                                  backgroundColor: Colors.white24,
+                                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.lightAccent),
+                                  minHeight: 6,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Text(
+                              '65%',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: AppColors.lightAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white.withValues(alpha: 0.1),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                            ),
+                            child: Text('Log reading session', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
@@ -144,6 +249,22 @@ class _LibraryScreenState extends State<LibraryScreen>
             delegate: _TabBarDelegate(
               tabBar: TabBar(
                 controller: _tabController,
+                indicator: BoxDecoration(
+                  borderRadius: BorderRadius.circular(100),
+                  color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent,
+                labelColor: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                unselectedLabelColor: isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 tabs: const [
                   Tab(text: AppStrings.readingNow),
                   Tab(text: AppStrings.finished),
@@ -191,21 +312,9 @@ class _LibraryScreenState extends State<LibraryScreen>
             return TabBarView(
               controller: _tabController,
               children: [
-                // Reading Now
-                RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<LibraryBloc>().add(const LoadBooks());
-                  },
-                  color: AppColors.lightAccent,
-                  child: BookListView(
-                    books: state.readingNow,
-                    emptyIcon: Icons.menu_book_rounded,
-                    emptyTitle: AppStrings.readingNowEmpty,
-                    emptySubtitle: AppStrings.readingNowEmptySubtitle,
-                    onBookTap: (book) => _navigateToDetail(book),
-                    onBookLongPress: (book) => _showStatusSheet(book),
-                  ),
-                ),
+                // Reading Tab (Reading Now & To Be Read)
+                _buildReadingTab(context, state.readingNow, state.toBeRead),
+                
                 // Finished — with AI Recommendations
                 RefreshIndicator(
                   onRefresh: () async {
@@ -214,6 +323,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                   color: AppColors.lightAccent,
                   child: _buildFinishedTab(context, state.finished),
                 ),
+                
                 // Wishlist
                 RefreshIndicator(
                   onRefresh: () async {
@@ -239,6 +349,132 @@ class _LibraryScreenState extends State<LibraryScreen>
           return const SizedBox.shrink();
         },
       ),
+    );
+  }
+
+  Widget _buildReadingTab(BuildContext context, List<Book> readingNow, List<Book> toBeRead) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<LibraryBloc>().add(const LoadBooks());
+      },
+      color: AppColors.lightAccent,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 100),
+        children: [
+          _buildDragTargetSection(
+            context,
+            title: AppStrings.readingNowSection,
+            status: BookStatus.readingNow,
+            books: readingNow,
+            emptyIcon: Icons.menu_book_rounded,
+            emptyTitle: AppStrings.readingNowEmpty,
+            emptySubtitle: AppStrings.readingNowEmptySubtitle,
+          ),
+          const SizedBox(height: 16),
+          _buildDragTargetSection(
+            context,
+            title: AppStrings.toBeReadSection,
+            status: BookStatus.toBeRead,
+            books: toBeRead,
+            emptyIcon: Icons.queue_rounded,
+            emptyTitle: 'Queue is empty',
+            emptySubtitle: 'Add books here to read them next',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDragTargetSection(
+    BuildContext context, {
+    required String title,
+    required BookStatus status,
+    required List<Book> books,
+    required IconData emptyIcon,
+    required String emptyTitle,
+    required String emptySubtitle,
+  }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return DragTarget<Book>(
+      onAcceptWithDetails: (details) {
+        if (details.data.status != status) {
+          context.read<LibraryBloc>().add(
+                UpdateStatus(bookId: details.data.id, newStatus: status),
+              );
+        }
+      },
+      builder: (context, candidateData, rejectedData) {
+        final isHovered = candidateData.isNotEmpty;
+        
+        return Container(
+          color: isHovered
+              ? (isDark ? AppColors.darkAccentMuted.withValues(alpha: 0.1) : AppColors.lightAccentMuted.withValues(alpha: 0.2))
+              : Colors.transparent,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                child: Text(
+                  title,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: isHovered ? (isDark ? AppColors.darkAccent : AppColors.lightAccent) : null,
+                  ),
+                ),
+              ),
+              if (books.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: EmptyStateWidget(
+                    icon: emptyIcon,
+                    title: emptyTitle,
+                    subtitle: emptySubtitle,
+                  ),
+                )
+              else
+                ...books.map((book) => LongPressDraggable<Book>(
+                      data: book,
+                      feedback: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: Transform.scale(
+                            scale: 1.02,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.15),
+                                    blurRadius: 30,
+                                    spreadRadius: 2,
+                                    offset: const Offset(0, 15),
+                                  ),
+                                ],
+                              ),
+                              child: BookCard(book: book, showStatus: false),
+                            ),
+                          ),
+                        ),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.3,
+                        child: BookCard(book: book, showStatus: false),
+                      ),
+                      child: BookCard(
+                        book: book,
+                        showStatus: false,
+                        onTap: () => _navigateToDetail(book),
+                      ),
+                    )),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -348,86 +584,42 @@ class _LibraryScreenState extends State<LibraryScreen>
                             ? AppColors.darkDivider
                             : AppColors.lightDivider,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          state.result.profileSummary,
-                          style: theme.textTheme.bodyMedium
-                              ?.copyWith(height: 1.5, fontStyle: FontStyle.italic),
-                        ),
-                      ),
-                      ...state.result.books.map((recBook) => Container(
-                            margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
-                              ),
+                      const SizedBox(height: 8),
+                      ...state.result.books.map((recBook) {
+                        final tempBook = Book(
+                          id: const Uuid().v4(),
+                          title: recBook.title,
+                          authors: [recBook.author],
+                          genres: [recBook.genre],
+                          status: BookStatus.readingNow,
+                          dateAdded: DateTime.now(),
+                          description: 'AI Recommendation: ${recBook.reason}',
+                          coverUrl: recBook.coverUrl,
+                        );
+                        return BookCard(
+                          book: tempBook,
+                          onTap: () {
+                            Navigator.of(context).pushNamed('/detail', arguments: tempBook);
+                          },
+                          action: FilledButton.tonalIcon(
+                            onPressed: () {
+                              context.read<LibraryBloc>().add(AddBookToLibrary(tempBook));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Added "${recBook.title}" to Reading Now'),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.add_rounded, size: 18),
+                            label: const Text('Reading Now'),
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  recBook.title,
-                                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  recBook.author,
-                                  style: theme.textTheme.bodyMedium?.copyWith(color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
-                                ),
-                                const SizedBox(height: 12),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? AppColors.darkAccentMuted : AppColors.lightAccentMuted,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    recBook.genre,
-                                    style: theme.textTheme.labelSmall,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  recBook.reason,
-                                  style: theme.textTheme.bodySmall?.copyWith(height: 1.5),
-                                ),
-                                const SizedBox(height: 16),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: FilledButton.tonalIcon(
-                                    onPressed: () {
-                                      final newBook = Book(
-                                        id: const Uuid().v4(),
-                                        title: recBook.title,
-                                        authors: [recBook.author],
-                                        genres: [recBook.genre],
-                                        status: BookStatus.readingNow,
-                                        dateAdded: DateTime.now(),
-                                        description: 'AI Recommendation: ${recBook.reason}',
-                                      );
-                                      context.read<LibraryBloc>().add(AddBookToLibrary(newBook));
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Added "${recBook.title}" to Reading Now'),
-                                          behavior: SnackBarBehavior.floating,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                        ),
-                                      );
-                                    },
-                                    icon: const Icon(Icons.add_rounded, size: 18),
-                                    label: const Text('Reading Now'),
-                                    style: FilledButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )),
+                          ),
+                        );
+                      }),
                       const SizedBox(height: 8),
                     ],
                     if (state is RecommendationError) ...[
@@ -510,6 +702,13 @@ class _LibraryScreenState extends State<LibraryScreen>
                   BookStatus.readingNow,
                   Icons.menu_book_rounded,
                   'Reading Now',
+                ),
+                _buildStatusOption(
+                  context,
+                  book,
+                  BookStatus.toBeRead,
+                  Icons.queue_rounded,
+                  'To Be Read',
                 ),
                 _buildStatusOption(
                   context,
