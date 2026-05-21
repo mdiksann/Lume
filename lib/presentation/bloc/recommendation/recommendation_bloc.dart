@@ -31,7 +31,25 @@ class RecommendationBloc
           await bookRepository.getBooksByStatus(BookStatus.finished);
       final recommendations =
           await aiRepository.getRecommendations(finishedBooks);
-      emit(RecommendationLoaded(recommendations));
+      
+      // Fetch covers for the recommended books
+      final booksWithCovers = await Future.wait(
+        recommendations.books.map((recBook) async {
+          try {
+            final query = '${recBook.title} ${recBook.author}';
+            final searchResults = await bookRepository.searchBooks(query);
+            if (searchResults.isNotEmpty && searchResults.first.coverUrl != null) {
+              return recBook.copyWith(coverUrl: searchResults.first.coverUrl);
+            }
+          } catch (e) {
+            // Ignore search errors, just return without cover
+          }
+          return recBook;
+        }),
+      );
+
+      final finalResult = recommendations.copyWith(books: booksWithCovers);
+      emit(RecommendationLoaded(finalResult));
     } catch (e) {
       emit(RecommendationError(e.toString()));
     }
