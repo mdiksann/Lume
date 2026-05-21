@@ -8,6 +8,7 @@ import 'package:lume/presentation/bloc/recommendation/recommendation_state.dart'
 import 'package:lume/domain/entities/book.dart';
 import 'package:lume/presentation/bloc/library/library_bloc.dart';
 import 'package:lume/presentation/bloc/library/library_event.dart';
+import 'package:lume/presentation/widgets/book_card.dart';
 import 'package:uuid/uuid.dart';
 
 class RecommendationScreen extends StatelessWidget {
@@ -75,71 +76,42 @@ class RecommendationScreen extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text('AI Recommendations', style: theme.textTheme.headlineSmall),
                   ]),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: isDark ? AppColors.darkDivider : AppColors.lightDivider),
-                    ),
-                    child: Text(state.result.profileSummary, style: theme.textTheme.bodyMedium?.copyWith(height: 1.5, fontStyle: FontStyle.italic)),
-                  ),
-                  const SizedBox(height: 16),
-                  ...state.result.books.map((recBook) => Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: isDark ? AppColors.darkDivider : AppColors.lightDivider),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(recBook.title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 4),
-                        Text(recBook.author, style: theme.textTheme.bodyMedium?.copyWith(color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkAccentMuted : AppColors.lightAccentMuted,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(recBook.genre, style: theme.textTheme.labelSmall),
+                  const SizedBox(height: 8),
+                  ...state.result.books.map((recBook) {
+                    final tempBook = Book(
+                      id: const Uuid().v4(),
+                      title: recBook.title,
+                      authors: [recBook.author],
+                      genres: [recBook.genre],
+                      status: BookStatus.readingNow,
+                      dateAdded: DateTime.now(),
+                      description: 'AI Recommendation: ${recBook.reason}',
+                      coverUrl: recBook.coverUrl,
+                    );
+                    return BookCard(
+                      book: tempBook,
+                      onTap: () {
+                        Navigator.of(context).pushNamed('/detail', arguments: tempBook);
+                      },
+                      action: FilledButton.tonalIcon(
+                        onPressed: () {
+                          context.read<LibraryBloc>().add(AddBookToLibrary(tempBook));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Added "${recBook.title}" to Reading Now'),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.add_rounded, size: 18),
+                        label: const Text('Reading Now'),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         ),
-                        const SizedBox(height: 12),
-                        Text(recBook.reason, style: theme.textTheme.bodySmall?.copyWith(height: 1.5)),
-                        const SizedBox(height: 16),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: FilledButton.tonalIcon(
-                            onPressed: () {
-                              final newBook = Book(
-                                id: const Uuid().v4(),
-                                title: recBook.title,
-                                authors: [recBook.author],
-                                genres: [recBook.genre],
-                                status: BookStatus.readingNow,
-                                dateAdded: DateTime.now(),
-                                description: 'AI Recommendation: ${recBook.reason}',
-                              );
-                              context.read<LibraryBloc>().add(AddBookToLibrary(newBook));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Added "${recBook.title}" to Reading Now'),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.add_rounded, size: 18),
-                            label: const Text('Reading Now'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )),
+                      ),
+                    );
+                  }),
                   const SizedBox(height: 24),
                   Center(child: TextButton.icon(
                     icon: const Icon(Icons.refresh_rounded, size: 20),
