@@ -12,6 +12,7 @@ class BookCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final bool showStatus;
+  final Widget? action;
 
   const BookCard({
     super.key,
@@ -19,6 +20,7 @@ class BookCard extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.showStatus = false,
+    this.action,
   });
 
   @override
@@ -33,9 +35,10 @@ class BookCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+            color: const Color(0x144A5260),
+            width: 0.8,
           ),
         ),
         child: Padding(
@@ -79,6 +82,13 @@ class BookCard extends StatelessWidget {
                         style: theme.textTheme.bodySmall,
                       ),
                     ],
+                    if (action != null) ...[
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: action!,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -98,7 +108,7 @@ class BookCard extends StatelessWidget {
         width: 72,
         height: 108,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           color: isDark ? AppColors.darkAccentMuted : AppColors.lightAccentMuted,
           boxShadow: [
             BoxShadow(
@@ -152,7 +162,7 @@ class BookCard extends StatelessWidget {
             color: isDark
                 ? AppColors.darkAccentMuted
                 : AppColors.lightAccentMuted.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(100),
           ),
           child: Text(
             genre,
@@ -181,6 +191,10 @@ class BookCard extends StatelessWidget {
         label = 'Finished';
         color = AppColors.success;
         break;
+      case BookStatus.toBeRead:
+        label = 'To Be Read';
+        color = isDark ? AppColors.darkAccent : AppColors.lightAccent;
+        break;
       case BookStatus.wishlist:
         label = 'Wishlist';
         color = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
@@ -191,7 +205,7 @@ class BookCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(100),
       ),
       child: Text(
         label,
