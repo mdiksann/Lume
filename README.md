@@ -190,4 +190,3 @@ flutter run -d ios
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
-*Created with 🕯️ by the Antigravity developer team.*
