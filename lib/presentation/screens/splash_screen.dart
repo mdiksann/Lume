@@ -1,14 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lume/core/constants/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Splash screen with the Lume logo and brand name.
-///
-/// Features:
-/// - Animated fade-in of the book-candle logo
-/// - Subtle scale animation on the brand name
-/// - Warm gradient glow behind the logo
-/// - Auto-navigation to Library after 2.5 seconds
+/// Splash/Onboarding screen with the Lume logo and brand name.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -19,18 +14,16 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _logoController;
-  late AnimationController _textController;
+  late AnimationController _cardController;
   late Animation<double> _logoFade;
   late Animation<double> _logoScale;
-  late Animation<double> _textFade;
-  late Animation<double> _textSlide;
+  late Animation<double> _cardSlide;
   late Animation<double> _glowAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    // Logo animation
     _logoController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -54,130 +47,186 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    // Text animation (starts slightly after logo)
-    _textController = AnimationController(
+    _cardController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1000),
     );
-    _textFade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeOut),
-    );
-    _textSlide = Tween<double>(begin: 20.0, end: 0.0).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
+    _cardSlide = Tween<double>(begin: 300.0, end: 0.0).animate(
+      CurvedAnimation(parent: _cardController, curve: Curves.easeOutQuart),
     );
 
-    // Start animations in sequence
     _logoController.forward().then((_) {
-      _textController.forward();
-    });
-
-    // Navigate after animations complete
-    Future.delayed(const Duration(milliseconds: 2800), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/library');
-      }
+      _cardController.forward();
     });
   }
 
   @override
   void dispose() {
     _logoController.dispose();
-    _textController.dispose();
+    _cardController.dispose();
     super.dispose();
+  }
+
+  void _getStarted() {
+    Navigator.of(context).pushReplacementNamed('/library');
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor =
-        isDark ? AppColors.darkBackground : AppColors.lightBackground;
-
     return Scaffold(
-      backgroundColor: backgroundColor,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF111622), // Midnight Ink
+              Color(0xFF1F293D), // Deep Slate Blue
+            ],
+          ),
+        ),
+        child: Stack(
           children: [
-            // ── Logo with glow effect ──
-            AnimatedBuilder(
-              animation: _logoController,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: _logoFade.value,
-                  child: Transform.scale(
-                    scale: _logoScale.value,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Warm glow behind logo
-                        Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                AppColors.lightAccent
-                                    .withValues(alpha: 0.12 * _glowAnimation.value),
-                                Colors.transparent,
-                              ],
-                              radius: 0.8,
+            // Center Logo
+            Center(
+              child: AnimatedBuilder(
+                animation: _logoController,
+                builder: (context, child) {
+                  return Opacity(
+                    opacity: _logoFade.value,
+                    child: Transform.scale(
+                      scale: _logoScale.value,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Glow
+                          Container(
+                            width: 250,
+                            height: 250,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  AppColors.lightAccent
+                                      .withValues(alpha: 0.25 * _glowAnimation.value),
+                                  Colors.transparent,
+                                ],
+                                radius: 0.8,
+                              ),
                             ),
                           ),
-                        ),
-                        // Logo image
-                        Image.asset(
-                          'assets/Logo2.png',
-                          width: 140,
-                          height: 140,
-                          color: isDark ? AppColors.darkTextPrimary : null,
-                        ),
-                      ],
+                          // Logo
+                          Image.asset(
+                            'assets/Logo2.png',
+                            width: 140,
+                            height: 140,
+                            color: Colors.white,
+                          ),
+                          // Title (Positioned below the logo)
+                          Positioned(
+                            bottom: 10,
+                            child: Text(
+                              'Lume',
+                              style: GoogleFonts.playfairDisplay(
+                                fontSize: 42,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.lightAccent, // Golden text
+                                letterSpacing: 4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-            const SizedBox(height: 32),
-
-            // ── Brand name ──
-            AnimatedBuilder(
-              animation: _textController,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: _textFade.value,
-                  child: Transform.translate(
-                    offset: Offset(0, _textSlide.value),
-                    child: Column(
-                      children: [
-                        Text(
-                          'Lume',
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 48,
-                            fontWeight: FontWeight.w700,
-                            color: isDark
-                                ? AppColors.darkTextPrimary
-                                : AppColors.lightTextPrimary,
-                            letterSpacing: 2,
+            // Bottom Glassmorphism Card
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: AnimatedBuilder(
+                animation: _cardController,
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: Offset(0, _cardSlide.value),
+                    child: child,
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
+                  ),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(32, 40, 32, 48),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        border: Border(
+                          top: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            width: 1,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Illuminate your reading journey',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: isDark
-                                ? AppColors.darkTextSecondary
-                                : AppColors.lightTextSecondary,
-                            letterSpacing: 1,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Join 10k+ readers\nilluminating their journey',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              height: 1.3,
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+                          Text(
+                            'Track your reading, discover new worlds, and organize your library with AI.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white70,
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: _getStarted,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.lightAccent, // Warm amber
+                                foregroundColor: AppColors.lightPrimary,
+                                elevation: 4,
+                                shadowColor: AppColors.lightAccent.withValues(alpha: 0.5),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(100), // Pill-shaped
+                                ),
+                              ),
+                              child: Text(
+                                'Get Started',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                );
-              },
+                ),
+              ),
             ),
           ],
         ),
