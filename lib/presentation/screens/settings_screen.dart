@@ -32,50 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         physics: const BouncingScrollPhysics(),
         children: [
-          // Profile Header
-          Center(
-            child: Column(
-              children: [
-                Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.lightAccent, width: 3),
-                        image: const DecorationImage(
-                          image: NetworkImage('https://i.pravatar.cc/150?img=68'),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Icon(Icons.edit_rounded, size: 16, color: AppColors.lightAccent),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text('Alex Reader', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 22)),
-                const SizedBox(height: 4),
-                Text('alex.reader@example.com', style: theme.textTheme.bodyMedium?.copyWith(color: isDark ? Colors.white54 : Colors.black54)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 40),
+
           
           // Reading Reminders
           Text('Preferences', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87)),
@@ -190,15 +147,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildStatCol(context, 'Books Read', '42', Icons.menu_book_rounded),
-                    Container(width: 1, height: 40, color: isDark ? AppColors.darkDivider : AppColors.lightDivider),
-                    _buildStatCol(context, 'Reading Streak', '12 Days', Icons.local_fire_department_rounded),
-                  ],
-                ),
+
               ],
             ),
           ),
@@ -208,19 +157,5 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildStatCol(BuildContext context, String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 16, color: AppColors.lightAccent),
-            const SizedBox(width: 6),
-            Text(label, style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Text(value, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-      ],
-    );
-  }
+
 }
