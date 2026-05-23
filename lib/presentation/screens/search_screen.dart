@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lume/core/constants/app_colors.dart';
 import 'package:lume/core/constants/app_strings.dart';
 import 'package:lume/domain/entities/book.dart';
@@ -22,13 +23,131 @@ class _SearchScreenState extends State<SearchScreen> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
 
+  List<Book>? _trendingBooks;
+  List<Book>? _recommendedBooks;
+  bool _isLoadingDiscovery = false;
+
+  static final List<Book> _fallbackTrending = [
+    Book(
+      id: 'trending-1',
+      title: 'Atomic Habits',
+      authors: const ['James Clear'],
+      genres: const ['Self-Help', 'Personal Growth'],
+      coverUrl: 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1655988390i/40121378.jpg',
+      status: BookStatus.toBeRead,
+      dateAdded: DateTime.now(),
+    ),
+    Book(
+      id: 'trending-2',
+      title: 'The Midnight Library',
+      authors: const ['Matt Haig'],
+      genres: const ['Fiction', 'Fantasy'],
+      coverUrl: 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1602190974i/52578297.jpg',
+      status: BookStatus.toBeRead,
+      dateAdded: DateTime.now(),
+    ),
+    Book(
+      id: 'trending-3',
+      title: 'Lessons in Chemistry',
+      authors: const ['Bonnie Garmus'],
+      genres: const ['Fiction', 'Historical'],
+      coverUrl: 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1647493721i/58065033.jpg',
+      status: BookStatus.toBeRead,
+      dateAdded: DateTime.now(),
+    ),
+    Book(
+      id: 'trending-4',
+      title: 'Can\'t Hurt Me',
+      authors: const ['David Goggins'],
+      genres: const ['Biography', 'Self-Help'],
+      coverUrl: 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1631527092i/41721428.jpg',
+      status: BookStatus.toBeRead,
+      dateAdded: DateTime.now(),
+    ),
+  ];
+
+  static final List<Book> _fallbackRecommended = [
+    Book(
+      id: 'rec-1',
+      title: 'Sapiens',
+      authors: const ['Yuval Noah Harari'],
+      genres: const ['History', 'Science'],
+      coverUrl: 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1590358926i/23692271.jpg',
+      status: BookStatus.toBeRead,
+      dateAdded: DateTime.now(),
+    ),
+    Book(
+      id: 'rec-2',
+      title: 'Thinking, Fast and Slow',
+      authors: const ['Daniel Kahneman'],
+      genres: const ['Psychology', 'Science'],
+      coverUrl: 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1317793930i/11468377.jpg',
+      status: BookStatus.toBeRead,
+      dateAdded: DateTime.now(),
+    ),
+    Book(
+      id: 'rec-3',
+      title: 'The Psychology of Money',
+      authors: const ['Morgan Housel'],
+      genres: const ['Finance', 'Psychology'],
+      coverUrl: 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1593498879i/51861313.jpg',
+      status: BookStatus.toBeRead,
+      dateAdded: DateTime.now(),
+    ),
+    Book(
+      id: 'rec-4',
+      title: 'Educated',
+      authors: const ['Tara Westover'],
+      genres: const ['Biography', 'Memoir'],
+      coverUrl: 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1506026635i/35133922.jpg',
+      status: BookStatus.toBeRead,
+      dateAdded: DateTime.now(),
+    ),
+  ];
+
   @override
   void initState() {
     super.initState();
     _focusNode.addListener(() {
       setState(() {});
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _focusNode.requestFocus());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _focusNode.requestFocus();
+        _loadDiscoveryData();
+      }
+    });
+  }
+
+  Future<void> _loadDiscoveryData() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoadingDiscovery = true;
+    });
+
+    try {
+      final repository = context.read<SearchBloc>().bookRepository;
+      final results = await Future.wait([
+        repository.searchBooks('trending'),
+        repository.searchBooks('bestsellers'),
+      ]);
+
+      if (mounted) {
+        setState(() {
+          _trendingBooks = results[0].isNotEmpty ? results[0].take(8).toList() : _fallbackTrending;
+          _recommendedBooks = results[1].isNotEmpty ? results[1].take(8).toList() : _fallbackRecommended;
+          _isLoadingDiscovery = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _trendingBooks = _fallbackTrending;
+          _recommendedBooks = _fallbackRecommended;
+          _isLoadingDiscovery = false;
+        });
+      }
+    }
   }
 
   @override
@@ -196,51 +315,53 @@ class _SearchScreenState extends State<SearchScreen> {
         const SizedBox(height: 36),
         Text('Trending Right Now', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 180,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: 5,
-            separatorBuilder: (_, __) => const SizedBox(width: 16),
-            itemBuilder: (context, index) {
-              return Container(
-                width: 120,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: isDark ? AppColors.darkAccentMuted : AppColors.lightAccentMuted.withValues(alpha: 0.3),
-                  border: Border.all(color: const Color(0x144A5260)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.lightAccent.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(2, 4),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.auto_stories_rounded,
-                    size: 32,
-                    color: AppColors.lightAccent.withValues(alpha: 0.6),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+        _buildDiscoveryList(_trendingBooks, isDark, Icons.auto_stories_rounded),
         const SizedBox(height: 36),
         Text('Recommended For You', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 180,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: 5,
-            separatorBuilder: (_, __) => const SizedBox(width: 16),
-            itemBuilder: (context, index) {
-              return Container(
+        _buildDiscoveryList(_recommendedBooks, isDark, Icons.auto_awesome_rounded),
+      ],
+    );
+  }
+
+  Widget _buildDiscoveryList(List<Book>? books, bool isDark, IconData placeholderIcon) {
+    final showShimmer = books == null || _isLoadingDiscovery;
+
+    return SizedBox(
+      height: 180,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: showShimmer ? 5 : books.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 16),
+        itemBuilder: (context, index) {
+          if (showShimmer) {
+            return Container(
+              width: 120,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: isDark ? AppColors.darkAccentMuted : AppColors.lightAccentMuted.withValues(alpha: 0.3),
+                border: Border.all(color: const Color(0x144A5260)),
+              ),
+              child: Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: isDark ? AppColors.darkAccent : AppColors.lightAccent,
+                  ),
+                ),
+              ),
+            );
+          }
+
+          final book = books[index];
+          return GestureDetector(
+            onTap: () => _showAddSheet(book),
+            child: Hero(
+              tag: 'discovery-${book.id}',
+              child: Container(
                 width: 120,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
@@ -248,24 +369,41 @@ class _SearchScreenState extends State<SearchScreen> {
                   border: Border.all(color: const Color(0x144A5260)),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.lightAccent.withValues(alpha: 0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(2, 4),
                     ),
                   ],
                 ),
-                child: Center(
-                  child: Icon(
-                    Icons.auto_awesome_rounded,
-                    size: 32,
-                    color: AppColors.lightAccent.withValues(alpha: 0.6),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+                clipBehavior: Clip.antiAlias,
+                child: book.coverUrl != null
+                    ? CachedNetworkImage(
+                        imageUrl: book.coverUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: isDark ? AppColors.darkAccent : AppColors.lightAccent,
+                          ),
+                        ),
+                        errorWidget: (_, __, ___) => _buildPlaceholderIcon(isDark, placeholderIcon),
+                      )
+                    : _buildPlaceholderIcon(isDark, placeholderIcon),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderIcon(bool isDark, IconData icon) {
+    return Center(
+      child: Icon(
+        icon,
+        size: 32,
+        color: AppColors.lightAccent.withValues(alpha: 0.6),
+      ),
     );
   }
 
