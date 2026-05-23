@@ -113,35 +113,15 @@ class _LibraryScreenState extends State<LibraryScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'My Library',
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w700,
-                          color: isDark
-                              ? AppColors.darkTextPrimary
-                              : AppColors.lightTextPrimary,
-                        ),
-                      ),
-                      const Spacer(),
-                      Icon(Icons.notifications_none_rounded, color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
-                      const SizedBox(width: 16),
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.lightAccent, width: 2),
-                          image: const DecorationImage(
-                            image: NetworkImage('https://i.pravatar.cc/150?img=68'),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'My Library',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   BlocBuilder<LibraryBloc, LibraryState>(
@@ -154,90 +134,6 @@ class _LibraryScreenState extends State<LibraryScreen>
                       }
                       return const SizedBox.shrink();
                     },
-                  ),
-                  const SizedBox(height: 24),
-                  // Reading Summary Card
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF111622), // Midnight Ink
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF111622).withValues(alpha: 0.15),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Current Reading',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white70,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const Icon(Icons.more_horiz, color: Colors.white70),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '12h 45m',
-                          style: GoogleFonts.playfairDisplay(
-                            color: Colors.white,
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(100),
-                                child: const LinearProgressIndicator(
-                                  value: 0.65,
-                                  backgroundColor: Colors.white24,
-                                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.lightAccent),
-                                  minHeight: 6,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Text(
-                              '65%',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: AppColors.lightAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white.withValues(alpha: 0.1),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(100),
-                              ),
-                            ),
-                            child: Text('Log reading session', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                   const SizedBox(height: 8),
                 ],
