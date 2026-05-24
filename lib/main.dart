@@ -10,12 +10,16 @@ import 'package:lume/data/models/book_model.dart';
 import 'package:lume/data/repositories/book_repository_impl.dart';
 import 'package:lume/data/repositories/ai_repository_impl.dart';
 import 'package:lume/services/notification_service.dart';
+import 'package:lume/services/supabase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load environment variables from .env file
   await dotenv.load(fileName: '.env');
+
+  // Initialize Supabase Cloud Service (fails gracefully to local-only mode if no keys)
+  await SupabaseService().init();
 
   // Lock to portrait orientation for iOS
   await SystemChrome.setPreferredOrientations([
