@@ -11,6 +11,7 @@ import 'package:lume/presentation/screens/search_screen.dart';
 import 'package:lume/presentation/screens/book_detail_screen.dart';
 import 'package:lume/presentation/screens/recommendation_screen.dart';
 import 'package:lume/presentation/screens/settings_screen.dart';
+import 'package:lume/presentation/screens/auth_screen.dart';
 import 'package:lume/domain/repositories/book_repository.dart';
 import 'package:lume/domain/repositories/ai_repository.dart';
 
@@ -85,6 +86,10 @@ class LumeApp extends StatelessWidget {
       case '/settings':
         return MaterialPageRoute(
           builder: (_) => const SettingsScreen(),
+        );
+      case '/auth':
+        return MaterialPageRoute(
+          builder: (_) => AuthScreen(bookRepository: bookRepository),
         );
       default:
         return MaterialPageRoute(
