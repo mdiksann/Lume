@@ -26,4 +26,7 @@ abstract class BookRepository {
 
   /// Returns a single book by its [bookId], or null if not found.
   Future<Book?> getBookById(String bookId);
+
+  /// Synchronizes local Hive books with Supabase cloud database.
+  Future<void> syncWithCloud();
 }
