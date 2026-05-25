@@ -21,6 +21,9 @@ dependencies:
   hive_ce: ^2.7.0
   hive_ce_flutter: ^2.3.4
 
+  # Cloud Database & Auth
+  supabase_flutter: ^2.8.0
+
   # Networking
   http: ^1.2.0
 
