@@ -173,6 +173,50 @@ flutter run
 flutter run -d ios
 ```
 
+### Step 6: Configure Supabase Cloud Sync (Optional)
+To enable real-time cloud sync and secure your reading history, set up a free database on [Supabase](https://supabase.com/):
+1. **Create a new project** in the Supabase Dashboard.
+2. Go to the **SQL Editor** in the left sidebar and click **"New query"**.
+3. Copy-paste the following SQL script to create the `books` table with Row Level Security (RLS) policies so that users can only view and manage their own books:
+```sql
+-- Create the books table
+create table books (
+  id text not null,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  title text not null,
+  authors text[] not null default '{}',
+  description text,
+  genres text[] not null default '{}',
+  cover_url text,
+  published_date text,
+  status_index integer not null default 0,
+  date_added timestamp with time zone not null,
+  rating double precision,
+  page_count integer,
+  updated_at timestamp with time zone not null default now(),
+
+  primary key (id, user_id)
+);
+
+-- Enable Row Level Security (RLS)
+alter table books enable row level security;
+
+-- Create policy to allow authenticated users full access to their own data only
+create policy "Users can manage their own library"
+  on books
+  for all
+  to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+```
+4. Click **"Run"** in the top right to execute the script.
+5. In your Supabase Project Settings, navigate to **API** and retrieve your **Project URL** and **API Anon Key**.
+6. Open your local `.env` file and insert your credentials:
+```env
+SUPABASE_URL="https://your-project-id.supabase.co"
+SUPABASE_ANON_KEY="your-anon-api-key"
+```
+
 ---
 
 ## Principal Packages & Modules
