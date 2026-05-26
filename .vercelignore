@@ -1,0 +1,17 @@
+.git
+.dart_tool
+.idea
+android
+ios
+linux
+macos
+windows
+lib
+test
+node_modules
+build/app
+build/flutter_assets
+build/reports
+build/tmp
+build/*.dill
+build/e98d07567b83f47086942fd7fd5d13f5
